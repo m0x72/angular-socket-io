@@ -5,6 +5,7 @@ var io = {
 function createMockSocketObject () {
 
   var socket = {
+    eventCounter: 0,
     on: function (ev, fn) {
       (this._listeners[ev] = this._listeners[ev] || []).push(fn);
     },
@@ -21,6 +22,7 @@ function createMockSocketObject () {
           listener(data);
         }.bind(this));
       }
+      this.eventCounter++;
     },
     _listeners: {},
     removeListener: function (ev, fn) {
@@ -40,7 +42,10 @@ function createMockSocketObject () {
         this._listeners = {};
       }
     },
-    disconnect: function () {}
+    disconnect: function () {},
+    $emit: function (ev, data) {  // mocks incoming events
+      this.emit(ev, data);
+    }
   };
 
   return socket;

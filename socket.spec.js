@@ -46,6 +46,36 @@ describe('socketFactory', function () {
 
   });
 
+  describe('socket', function () {
+
+    it('should increment (dummy) eventCounter property', function () {
+      var evCounter = socket.socket.eventCounter;
+      mockIoSocket.$emit('event');
+      expect(socket.socket.eventCounter).toBe(++evCounter);
+    })
+
+    it('should run a digest and thus execute scope watcher', function () {
+      scope.$watch(spy)
+      mockIoSocket.$emit('event');
+      expect(spy).toHaveBeenCalled();
+    })
+
+    it('should run watchers on socket object', function () {
+
+      scope.socket = socket.socket; // reference exposed socket on scope
+      scope.$watch('socket.eventCounter', function (newVal, oldVal) {  // set watcher on some changing socket property
+        if (newVal !== oldVal) spy()
+      });
+      scope.$digest();  // register watcher
+
+      mockIoSocket.$emit('event');  // simulate incoming event, by calling socket.io's incoming event handler (of type EventEmitter)
+
+      expect(spy).toHaveBeenCalled();   // expect our listener to have been called (eventCounter is tested in case above)
+
+    });
+
+  });
+
 
   describe('#disconnect', function () {
 

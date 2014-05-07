@@ -32,6 +32,17 @@ angular.module('btford.socket-io', []).
         var prefix = options.prefix || defaultPrefix;
         var defaultScope = options.scope || $rootScope;
 
+        // monkey patch socket.io's $emit to initialte a $digest on any incoming (socket) events
+        (function (){
+          var $emit = socket.$emit
+          socket.$emit = function () {
+            var _arguments = arguments
+            $rootScope.$apply(function (){
+              $emit.apply(socket, _arguments);
+            })
+          }
+        })();
+
         var addListener = function (eventName, callback) {
           socket.on(eventName, callback.__ng = asyncAngularify(socket, callback));
         };
@@ -41,6 +52,7 @@ angular.module('btford.socket-io', []).
         };
 
         var wrappedSocket = {
+          socket: socket,  //expose socket.io's socket object
           on: addListener,
           addListener: addListener,
           once: addOnceListener,
